@@ -44,6 +44,8 @@ To create packages on your own:
   (yes, both, no matter which version you will run)
 - Download jce_policy-6.zip from the same page under "Java Cryptography
   Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6"
+- Download tzupdater-1_3_47-2012c.zip from the same page under "JDK DST
+  Timezone Update Tool"
 - dpkg-buildpackage -uc -us
 - install any missing packages that dpkg-buildpackage complains about
   and repeat

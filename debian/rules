@@ -33,6 +33,8 @@ dirpartsv	:= $(shell dpkg-parsechangelog | sed -ne '/Version:/ s,Version: \(.*\)
 version		:= $(word 1, $(dirpartsv))
 releng_ver	:= $(word 2, $(dirpartsv))
 jdkversion	:= 1.$(version).0
+tzversion	:= 1_3_47-2012c
+tzdirversion	:= $(subst _,.,$(tzversion))
 unpackdir	:= jdk$(jdkversion)_$(releng_ver)
 jdirname	:= $(ia32_prefix)java-$(version)-$(VENDOR)-$(jdkversion).$(releng_ver)
 jdiralias	:= $(ia32_prefix)java-$(version)-$(VENDOR)
@@ -88,6 +90,7 @@ info:
 	@echo 'basename    = $(basename)'
 	@echo 'version     = $(version)'
 	@echo 'releng_ver  = $(releng_ver)'
+	@echo 'tzversion   = $(tzversion)'
 	@echo 'unpackdir   = $(unpackdir)'
 	@echo 'srcdir      = $(srcdir)'
 	@echo 'all_archs   = $(all_archs)'
@@ -277,7 +280,7 @@ compare-jre-jars:
 diff_ignore = -I 'Thursday, April 5' \
 	-I 'Thu Apr 05' -I '^ *// java GenerateCharacter'
 
-unpack-stamp: $(foreach a, $(all_archs), unpack-$(a)-stamp) unpack-jce-stamp
+unpack-stamp: unpack-tzupdater-stamp $(foreach a, $(all_archs), unpack-$(a)-stamp) unpack-jce-stamp
 	: # check for identical files / trees
 	set -e; set -- $(all_archs); a1=$$1; shift; \
 	for a2; do \
@@ -360,6 +363,10 @@ unpack-%-stamp: $(bin_pattern)
 	: # fix permissions
 	-find $*-jdk -name '*.properties' -o -name '*.xml' | xargs chmod 644
 
+	: # Update tzdata
+	$*-jdk/jre/bin/java -jar tzupdater-$(tzdirversion)/tzupdater.jar -u
+	rm -rf $*-jdk/jre/lib/zi.tzdata20[1-9][0-9][a-z]
+
 	touch $@
 
 unpack-jce-stamp:
@@ -367,11 +374,16 @@ unpack-jce-stamp:
 	unzip -q jce_policy-$(version).zip
 	touch $@
 
+unpack-tzupdater-stamp:
+	rm -rf tzupdater-$(tzdirversion)
+	unzip -q tzupdater-$(tzversion).zip
+	touch $@
+
 clean:
 	dh_testdir
 	dh_testroot
 	rm -f *-stamp
-	rm -rf x64-jdk i586-jdk jce tmp-* $(unpackdir)
+	rm -rf x64-jdk i586-jdk jce tzupdater-$(tzdirversion) tmp-* $(unpackdir)
 	rm -f debian/*.debhelper debian/control.old
 	rm -f debian/$(p_jbin).substvars.tmp
 

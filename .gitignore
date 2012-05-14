@@ -1,5 +1,6 @@
 jdk-*-linux-*.bin
 jce_policy-*.zip
+tzupdater-*
 i586-jdk
 x64-jdk
 tmp-i586
